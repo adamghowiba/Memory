@@ -1,7 +1,8 @@
 <!-- TODO: Use svelete store for rendring grid? -->
 
 <script>
-	export let gridSize = 4;
+    import { getBoardSize, gameMode } from "$lib/stores/mode";
+	export let gridSize = getBoardSize($gameMode);
 
     const gridRows = `grid-template-rows: repeat(${gridSize}, min-content);`
     const gridColumns = `grid-template-columns: repeat(${gridSize}, min-content);`

@@ -3,9 +3,6 @@ import Button from "$lib/Button.svelte";
 import type {Mode} from '$lib/types/types';
 import { gameMode } from "$lib/stores/mode";
 
-function setGameMode(mode: Mode) {
-    $gameMode = 'easy';
-}
 </script>
 
 <div class="wrapper">
@@ -13,8 +10,8 @@ function setGameMode(mode: Mode) {
 
     
     <div class="buttons">
-        <Button circle href="/board" on:click={() => setGameMode('easy')}> Easy </Button>
-        <Button circle href=""> Hard </Button>
+        <Button circle href="/board" on:click={() => $gameMode = 'easy'}> Easy </Button>
+        <Button circle href="/board" on:click={() => $gameMode = 'hard'}> Hard </Button>
     </div>
 </div>
 

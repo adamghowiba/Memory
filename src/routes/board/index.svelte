@@ -1,57 +1,97 @@
 <script lang="ts">
-	import { gameMode } from '$lib/stores/mode';
+	import { gameMode, gameResult, getBoardSize } from '$lib/stores/mode';
 	import Board from './GameBoard.svelte';
-	import Tile from './Tile.svelte';
+	import Tile from './TileItem.svelte';
 	import type { TileState } from '$lib/types/types';
 	import type { TileItem } from '$lib/types/interfaces';
-	import { generateRandomNumbers } from '$lib/utils';
-	$gameMode = 'easy';
+	import { generateBoardNumbers } from '$lib/utils';
+	import Status from '$lib/Status.svelte';
+	import GameOver from './GameOver.svelte';
+import { onMount } from 'svelte';
+	const boardSize = getBoardSize($gameMode);
 
-	let correctGuesses = [];
-
-	let boardArray = Array.from({ length: 16 }, (value, index) => ({
-		num: index + 1,
-		state: 'covered'
-	}));
-
+	let correctGuess = [];
 	let selected = [];
-	const SIZE = 2;
+	let boardArray = [];
 
-	function numberClicked(num, index) {
-		selected = [...selected, num];
-		boardArray[index].state = 'shown';
+	let moves = 0;
 
-		if (selected.length >= SIZE) {
-			let equal = selected[0] == selected[1];
+	generateBoardNumbers(boardSize * boardSize).forEach((number) => {
+		boardArray.push(number);
+	});
 
-			if (equal) {
-				console.log('numbered are equal, horray');
-			} else {
-				console.log('keep guesing');
+	function handleClick(index) {
+		selected = [...selected, index];
+
+		if (selected.length >= 2) {
+			const firstGuess = boardArray[selected[0]];
+			const secondGuess = boardArray[selected[1]];
+			moves += 1;
+			if (firstGuess == secondGuess) {
+				correctGuess = [...correctGuess, ...selected];
+				selected = [];
+				return;
 			}
 
-			selected = [];
+			setTimeout(() => {
+				selected = [];
+			}, 500);
 		}
 	}
 
-	$: console.log(selected);
+	function handleGameover(event) {
+		if (event.detail) {
+			$gameResult = 'lost';
+		}
+	}
+
+	function hadleRestart() {
+		$gameResult = 'starting';
+		moves = 0;
+		selected = [];
+		correctGuess = [];
+	}
+
+	onMount(() => {
+		$gameResult = 'starting';
+	})
+
+	$: if (correctGuess.length == boardArray.length) {
+		$gameResult = 'won';
+	}
 </script>
+
+{#if $gameResult == 'won' || $gameResult == "lost"}
+<GameOver on:newGame={hadleRestart} correct={correctGuess.length / 2} moves={moves}/>
+{/if}
 
 <h1>{$gameMode}</h1>
 <Board>
-	<!-- {#each boardArray as { number, state }, index}
-		<Tile bind:state on:click={() => handleClick(index)}>{number}</Tile>
-	{/each} -->
 	{#each boardArray as val, index}
-		<Tile bind:state={val.state} on:click={() => numberClicked(val.num, index)}
-			>{Math.floor(Math.random() * 20 + 1)}</Tile
+		<Tile
+			shown={selected.includes(index)}
+			correct={correctGuess.includes(index)}
+			on:click={() => handleClick(index)}>{val}</Tile
 		>
 	{/each}
 </Board>
+
+<div class="status">
+	<Status type="time" on:over={handleGameover} />
+	<Status type="moves" value={moves} />
+</div>
 
 <style>
 	h1 {
 		text-align: center;
 		margin-bottom: 3rem;
+	}
+	.status {
+		display: flex;
+		max-width: 300px;
+		justify-content: center;
+		gap: 4rem;
+		margin: 0 auto;
+		margin-top: 4rem;
 	}
 </style>

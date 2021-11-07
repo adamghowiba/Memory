@@ -1,7 +1,13 @@
-import type {TileState} from '../types/types';
+import type {Mode} from '../types/types';
 
 export type TileItem = {
     number: number;
-    state: TileState;
     index: number;
 }
+
+export interface BoardLayout {
+    mode: Mode
+    size: '16' | '36'
+}
+
+
